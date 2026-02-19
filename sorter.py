@@ -63,44 +63,49 @@ def classify_with_ollama(title, author, snippet):
     return genre, confidence, explanation
 
 
-def parse_author_title_from_folder(folder_name):
+def parse_author_title_from_folder(filename):
     """Parsuje nazwę folderu, próbując wyodrębnić autora i tytuł."""
     try:
-        # Zastosuj heurystyczne metody parsowania nazwy folderu
-        # Przykład: rozdzielenie po spacji, uwzględnienie formatu
-        parts = folder_name.split()  # Podstawowe rozdzielenie
-
-        # Złożone logiczne rozdzielenie, uwzględniające potencjalne nazwy
-        # zmodyfikuj to w razie potrzeby, żeby lepiej pasowało do Twoich danych
-        if len(parts) >= 2:
-            title = " ".join(parts[:-1])  # Tytuł to wszystko przed ostatnim słowem
-            author = parts[-1]  # Ostatnie słowo to nazwisko
+        # Używamy wyrażenia regularnego do znalezienia tekstu przed ostatnią komórką
+        match = re.match(r"^(.*) - (.*)$", filename)
+        if match:
+            title = match.group(1).strip()
+            author = match.group(2).strip()
             return title, author
         else:
-            return None, None # Nie znaleziono autor i tytuł
-    except:
-        return None, None # Obsługa błędów w parsowaniu
+            print(f"Could not parse filename: {filename}")
+            return None, None
+    except Exception as e:
+        print(f"Error parsing filename {filename}: {e}")
+        return None, None
 
 
 def process_folder(folder_path):
     """Przetwarza folder i jego zawartość."""
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
+        print(f"Processing file: {filename}")  # Debugowanie - informacja o przetwarzanym pliku
         if os.path.isfile(file_path):
             # Ignoruj folder
             continue
             
-            # Dodanie wyjątku, aby omijać reguły rozpoznawania autora,
-            # jeśli nazwa pliku/folderu nie spełnia kryteriów
-            title, author = parse_author_title_from_folder(filename)
-            if title is None or author is None:
-                print(f"Ignoring folder {filename} - title and author not found.")
+            #Dodano check, czy plik istnieje
+            if not os.path.exists(file_path):
+                print(f"File does not exist: {file_path}")
                 continue
 
-            snippet = "This is a test snippet." #  Zastąp to prawdziwym fragmentem tekstu
+            #Przykładowa implementacja, aby sprawdzić czy file_path jest prawidłowy
+            try:
+                title, author = parse_author_title_from_folder(filename)
+                if title and author:
+                    print(f"Title: {title}, Author: {author}")
+                else:
+                    print(f"Could not determine title and author for {filename}")
 
-            genre, confidence, explanation = classify_with_ollama(title, author, snippet)
-            print(f"Title: {title}, Author: {author}, Genre: {genre}, Confidence: {confidence}, Explanation: {explanation}")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+
         else:
             print(f"Found file {file_path} but it is not a regular file.")
 
@@ -108,7 +113,7 @@ def process_folder(folder_path):
 # Główna funkcja skryptu
 if __name__ == "__main__":
     # Zastąp to ścieżką do folderu, który chcesz przetworzyć
-    folder_path = "E:\\PROJEKT AI SORTER\\ebook_sorter\\input_books"
+    folder_path = "E:\\PROJEKT AI SORTER\\ebook_sorter"
     process_folder(folder_path)
 
 def clean_text(t: str) -> str:
