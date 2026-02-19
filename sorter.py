@@ -18,6 +18,67 @@ USED_BOOKS_DIR = "used books"
 
 SUPPORTED_EXTS = (".epub", ".pdf", ".txt", ".mobi", ".azw3", ".html", ".htm", ".rtf", ".zip")
 
+# def pobierz_fragenty_goodreads(liczba_fragmentow=10):
+#     """
+#     Pobiera fragmenty książek z Goodreads i zwraca listę.
+#     """
+#     url = 'https://www.goodreads.com/quotes'
+#     response = requests.get(url)
+#
+#     if response.status_code == 200:
+#         soup = BeautifulSoup(response.content, 'html.parser')
+#         quotes = soup.find_all('div', class_='quote')
+#
+#         fragenty = []
+#         for i in range(min(liczba_fragmentow, len(quotes))): #Ograniczamy liczbę pobranych fragmentów
+#             quote = quotes[i]
+#             autor = quote.find('span', class_='author').text
+#             title = quote.find('div', class_='quote-title').text
+#             try:
+#                 genre = quote.find('div', class_='quote-genre').text
+#             except:
+#                 genre = None
+#
+#             fragenty.append({
+#                 'tekst': title,
+#                 'autor': autor,
+#                 'gatunek': genre
+#             })
+#         return fragenty
+#     else:
+#         print(f"Błąd pobierania strony: {response.status_code}")
+#         return []
+
+def pobierz_fragenty_goodreads(liczba_fragmentow=10):
+    """
+    Pobiera fragmenty książek z Goodreads i zwraca listę.
+    """
+    url = 'https://www.goodreads.com/quotes'
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        quotes = soup.find_all('div', class_='quote')
+
+        fragenty = []
+        for i in range(min(liczba_fragmentow, len(quotes))): #Ograniczamy liczbę pobranych fragmentów
+            quote = quotes[i]
+            autor = quote.find('span', class_='author').text
+            title = quote.find('div', class_='quote-title').text
+            try:
+                genre = quote.find('div', class_='quote-genre').text
+            except:
+                genre = None
+
+            fragenty.append({
+                'tekst': title,
+                'autor': autor,
+                'gatunek': genre
+            })
+        return fragenty
+    else:
+        print(f"Błąd pobierania strony: {response.status_code}")
+        return []
 
 def clean_text(t: str) -> str:
     t = re.sub(r"\s+", " ", t or "").strip()
@@ -715,4 +776,5 @@ def main():
     print("Gotowe. Wynik w output_sorted/ oraz report.csv")
 
 if __name__ == "__main__":
+
     main()
